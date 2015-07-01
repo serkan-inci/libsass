@@ -232,43 +232,51 @@ extern "C" {
       json_append_member(json_err, "message", json_mkstring(e.message.c_str()));
       string rel_path(Sass::File::resolve_relative_path(e.pstate.path, cwd, cwd));
 
-      string msg_prefix("Error: ");
-      bool got_newline = false;
-      msg_stream << msg_prefix;
+      msg_stream << e.pstate.path.c_str() << "(" << e.pstate.line + 1 << ") : Error : ";
       for (char chr : e.message) {
-        if (chr == '\n') {
-          got_newline = true;
-        } else if (got_newline) {
-          msg_stream << string(msg_prefix.size(), ' ');
-          got_newline = false;
-        }
-        msg_stream << chr;
+          if (chr != '\n') {
+            msg_stream << chr;
+          }
       }
-      if (!got_newline) msg_stream << "\n";
-      msg_stream << string(msg_prefix.size(), ' ');
-      msg_stream << " on line " << e.pstate.line+1 << " of " << rel_path << "\n";
 
-      // now create the code trace (ToDo: maybe have util functions?)
-      if (e.pstate.line != string::npos && e.pstate.column != string::npos) {
-        size_t line = e.pstate.line;
-        const char* line_beg = e.pstate.src;
-        while (line_beg && *line_beg && line) {
-          if (*line_beg == '\n') -- line;
-          ++ line_beg;
-        }
-        const char* line_end = line_beg;
-        while (line_end && *line_end && *line_end != '\n') {
-          if (*line_end == '\n') break;
-          if (*line_end == '\r') break;
-          line_end ++;
-        }
-        size_t max_left = 42; size_t max_right = 78;
-        size_t move_in = e.pstate.column > max_left ? e.pstate.column - max_left : 0;
-        size_t shorten = (line_end - line_beg) - move_in > max_right ?
-                         (line_end - line_beg) - move_in - max_right : 0;
-        msg_stream << ">> " << string(line_beg + move_in, line_end - shorten) << "\n";
-        msg_stream << "   " << string(e.pstate.column - move_in, '-') << "^\n";
-      }
+	  //string msg_prefix("Error: ");
+	  //bool got_newline = false;
+	  //msg_stream << msg_prefix;
+	  //for (char chr : e.message) {
+	  //  if (chr == '\n') {
+	  //    got_newline = true;
+	  //  } else if (got_newline) {
+	  //    msg_stream << string(msg_prefix.size(), ' ');
+	  //    got_newline = false;
+	  //  }
+	  //  msg_stream << chr;
+	  //}
+	  //if (!got_newline) msg_stream << "\n";
+	  //msg_stream << string(msg_prefix.size(), ' ');
+	  //msg_stream << " on line " << e.pstate.line+1 << " of " << rel_path << "\n";
+
+	  //// now create the code trace (ToDo: maybe have util functions?)
+	  //if (e.pstate.line != string::npos && e.pstate.column != string::npos) {
+	  //  size_t line = e.pstate.line;
+	  //  const char* line_beg = e.pstate.src;
+	  //  while (line_beg && *line_beg && line) {
+	  //    if (*line_beg == '\n') -- line;
+	  //    ++ line_beg;
+	  //  }
+	  //  const char* line_end = line_beg;
+	  //  while (line_end && *line_end && *line_end != '\n') {
+	  //    if (*line_end == '\n') break;
+	  //    if (*line_end == '\r') break;
+	  //    line_end ++;
+	  //  }
+	  //  size_t max_left = 42; size_t max_right = 78;
+	  //  size_t move_in = e.pstate.column > max_left ? e.pstate.column - max_left : 0;
+	  //  size_t shorten = (line_end - line_beg) - move_in > max_right ?
+	  //                   (line_end - line_beg) - move_in - max_right : 0;
+	  //  msg_stream << ">> " << string(line_beg + move_in, line_end - shorten) << "\n";
+	  //  msg_stream << "   " << string(e.pstate.column - move_in, '-') << "^\n";
+	  //}
+
 
       c_ctx->error_json = json_stringify(json_err, "  ");;
       c_ctx->error_message = sass_strdup(msg_stream.str().c_str());
